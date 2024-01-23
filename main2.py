@@ -5,14 +5,39 @@ from fastapi.responses import HTMLResponse
 
 app = FastAPI()
 
-html = """
+html_sender = """
 <!DOCTYPE html>
 <html>
     <head>
-        <title>WebSocket Chat</title>
+        <title>WebSocket Sender</title>
     </head>
     <body>
-        <h1>WebSocket Chat</h1>
+        <h1>WebSocket Sender</h1>
+        <form action="" onsubmit="sendMessage(event)">
+            <input type="text" id="messageText" autocomplete="off"/>
+            <button>Send</button>
+        </form>
+        <script>
+            var ws = new WebSocket("ws://localhost:8000/ws");
+            function sendMessage(event) {
+                var input = document.getElementById("messageText")
+                ws.send(input.value)
+                input.value = ''
+                event.preventDefault()
+            }
+        </script>
+    </body>
+</html>
+"""
+
+html_receiver = """
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>WebSocket Receiver</title>
+    </head>
+    <body>
+        <h1>WebSocket Receiver</h1>
         <ul id='messages'>
         </ul>
         <script>
@@ -45,9 +70,14 @@ async def startup_event():
     asyncio.create_task(send_heartbeat())
 
 
-@app.get("/")
-async def get():
-    return HTMLResponse(html)
+@app.get("/sender")
+async def sender():
+    return HTMLResponse(html_sender)
+
+
+@app.get("/receiver")
+async def receiver():
+    return HTMLResponse(html_receiver)
 
 
 @app.websocket("/ws")
