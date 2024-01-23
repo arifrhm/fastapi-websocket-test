@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Socket.IO Connection Example</title>
+    <!-- Include the Socket.IO library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
+</head>
+<body>
+    <h1>Socket.IO Connection Example</h1>
+    
+    <form id="messageForm">
+        <label for="message">Enter Message:</label>
+        <input type="text" id="message" required>
+        <button type="button" onclick="connectToNamespace('/namespace1')">Connect to Namespace 1</button>
+        <button type="button" onclick="connectToNamespace('/namespace2')">Connect to Namespace 2</button>
+    </form>
+
+    <div id="output"></div>
+
+    <script>
+        let socket;
+
+        function connectToNamespace(namespace) {
+            // Close existing Socket.IO connection, if any
+            if (socket) {
+                socket.disconnect();
+            }
+
+            // Create a new Socket.IO connection
+            socket = io(`${window.location.protocol}//${window.location.host}${namespace}`);
+
+            // Handle Socket.IO events
+            socket.on('connect', () => {
+                console.log(`Connected to ${namespace}`);
+            });
+
+            socket.on('message', (data) => {
+                const outputDiv = document.getElementById('output');
+                outputDiv.innerHTML = `Received: ${data}`;
+            });
+
+            socket.on('disconnect', () => {
+                console.log(`Disconnected from ${namespace}`);
+            });
+        }
+
+        // Submit form to send message
+        document.getElementById('messageForm').addEventListener('submit', (event) => {
+            event.preventDefault();
+            const messageInput = document.getElementById('message');
+            const message = messageInput.value;
+
+            if (socket && socket.connected) {
+                // Emit a custom 'message' event
+                socket.emit('message', message);
+                messageInput.value = '';
+            } else {
+                alert('Socket.IO connection not open. Connect to a namespace first.');
+            }
+        });
+    </script>
+</body>
+</html>
